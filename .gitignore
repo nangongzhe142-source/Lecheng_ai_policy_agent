@@ -197,11 +197,6 @@ docker/middleware.env
 docker/docker-compose.override.yaml
 docker/env-backup/*
 
-# docker compose split env files and root .env (materialized by generate_docker_compose from *.env.example)
-docker/envs/**/*.env
-!docker/envs/**/*.env.example
-docker/.env
-
 sdks/python-client/build
 sdks/python-client/dist
 sdks/python-client/dify_client.egg-info
