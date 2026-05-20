@@ -19,10 +19,8 @@ dev-setup: prepare-docker prepare-web prepare-api
 	@echo "✅ Backend development environment setup complete!"
 
 # Step 1: Prepare Docker middleware
-# Step 1: Regenerate docker-compose.yaml and materialize envs/core-services/*.env from *.env.example
 prepare-docker:
 	@echo "🐳 Setting up Docker middleware..."
-	@cd $(DOCKER_DIR) && python generate_docker_compose
 	@if [ ! -f "$(DOCKER_MIDDLEWARE_ENV)" ]; then \
 		cp "$(DOCKER_MIDDLEWARE_ENV_EXAMPLE)" "$(DOCKER_MIDDLEWARE_ENV)"; \
 		echo "Docker middleware.env created"; \
@@ -47,23 +45,7 @@ prepare-api:
 	@cd api && uv run flask db upgrade
 	@echo "✅ API environment prepared (not started)"
 
-# Lecheng QA prototype: ensure api/.env has Lecheng keys; verify UUID (warn-only so make succeeds before Console)
-.PHONY: prepare-lecheng-qa-prototype
-prepare-lecheng-qa-prototype:
-	@cp -n api/.env.example api/.env 2>/dev/null || true
-	@cd api && uv run python scripts/ensure_lecheng_qa_env.py
-	@cd api && uv run python scripts/verify_lecheng_qa_prereqs.py --warn-only
-
-# Regenerate dify/docker/docker-compose.yaml from docker-compose-template.yaml (after editing template or env examples)
-.PHONY: regenerate-docker-compose
-regenerate-docker-compose:
-	@cd $(DOCKER_DIR) && python generate_docker_compose
-	@echo "✅ docker/docker-compose.yaml regenerated"
-
-# Middleware + Lecheng env keys (Docker lecheng.env from example + api/.env QA keys); does not start containers
-.PHONY: prepare-lecheng-demo-env
-prepare-lecheng-demo-env: regenerate-docker-compose prepare-lecheng-qa-prototype
-	@echo "✅ Lecheng Docker env materialized; api/.env QA keys ensured (see lecheng-usage-and-operations.md §2)"
+# Clean dev environment
 dev-clean:
 	@echo "⚠️  Stopping Docker containers..."
 	@if [ -f "$(DOCKER_MIDDLEWARE_ENV)" ]; then \
@@ -165,9 +147,6 @@ help:
 	@echo "  make prepare-docker - Set up Docker middleware"
 	@echo "  make prepare-web    - Set up web environment"
 	@echo "  make prepare-api    - Set up API environment"
-	@echo "  make prepare-lecheng-qa-prototype - Append Lecheng QA keys to api/.env and run prereq check (warn-only)"
-	@echo "  make prepare-lecheng-demo-env     - regenerate-docker-compose + prepare-lecheng-qa-prototype (no container up)"
-	@echo "  make regenerate-docker-compose    - python docker/generate_docker_compose (after template / env example edits)"
 	@echo "  make dev-clean      - Stop Docker middleware containers and remove dev data"
 	@echo ""
 	@echo "Backend Code Quality:"
@@ -186,4 +165,4 @@ help:
 	@echo "  make build-push-all - Build and push all Docker images"
 
 # Phony targets
-.PHONY: build-web build-api push-web push-api build-all push-all build-push-all dev-setup prepare-docker prepare-web prepare-api prepare-lecheng-qa-prototype prepare-lecheng-demo-env regenerate-docker-compose dev-clean help format check lint type-check test
+.PHONY: build-web build-api push-web push-api build-all push-all build-push-all dev-setup prepare-docker prepare-web prepare-api dev-clean help format check lint type-check test
