@@ -252,3 +252,59 @@ scripts/stress-test/reports/
 .qoder/*
 
 .eslintcache
+
+# =============================================================================
+# Lecheng policy agent — local only (do not sync to GitHub)
+# API keys, runtime secrets, and policy source documents stay on this machine.
+# =============================================================================
+
+# Runtime secrets (templates *.env.example remain trackable)
+docker/.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_rsa.*
+*.credentials.json
+*credentials*.json
+*api_key*
+*api-key*
+secrets.json
+secrets.yaml
+.secrets/
+
+# Policy corpus & office documents (upload to Dify KB via console; not in git)
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# Local policy / knowledge source directories (create as needed)
+/policy-docs/
+/policy_documents/
+/corpus/
+/data/policies/
+/docs/knowledge_base/files/
+/docs/knowledge_base/documents/
+/lecheng_modules/**/documents/
+/lecheng_modules/**/corpus/
+/deployment/local/secrets/
+/uploads/
+
+# Local-only docs with real IPs, paths, API hints (GitHub gets redacted *.md without .local)
+*.local.md
+*.local.json
+*.local.yaml
+*.local.yml
+docs/progress_logs/*.local.md
+docs/**/local-only/
+
+# Optional extra env overlay (real values); docker/.env remains the primary local file
+docker/.env.local
+docker/env.local/
