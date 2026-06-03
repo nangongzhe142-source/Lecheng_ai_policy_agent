@@ -13,6 +13,7 @@
 |------|-------------------|------------|
 | 2026-05-13 | `2026-05-13-dify-local-setup-progress-log.md` | （可选自行补 `.local.md`） |
 | 2026-05-20 | `2026-05-20-windows-docker-migration-and-ops-log.md` | `2026-05-20-windows-docker-migration-and-ops-log.local.md` |
+| 2026-06-03 | `2026-06-03-langsmith-manual-review-sync-log.md` | （可选自行补 `.local.md`） |
 
 ## 提交前
 
