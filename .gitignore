@@ -308,3 +308,7 @@ docs/**/local-only/
 # Optional extra env overlay (real values); docker/.env remains the primary local file
 docker/.env.local
 docker/env.local/
+
+# LangSmith daily sync (local API key)
+scripts/manual-review/langsmith.env.local
+scripts/manual-review/logs/
