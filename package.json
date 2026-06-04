@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "concurrently -k -n vinext,proxy \"vp run dify-web#dev:vinext\" \"vp run dify-web#dev:proxy\"",
+    "dev:lan": "concurrently -k -n vinext,proxy \"vp run dify-web#dev:vinext:lan\" \"vp run dify-web#dev:proxy\"",
     "prepare": "vp config",
     "type-check": "vp run -r type-check",
     "lint": "eslint --cache --concurrency=auto",

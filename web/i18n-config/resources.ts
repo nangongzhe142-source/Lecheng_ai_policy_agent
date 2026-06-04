@@ -19,9 +19,10 @@ import type layout from '../i18n/en-US/layout.json'
 import type login from '../i18n/en-US/login.json'
 import type oauth from '../i18n/en-US/oauth.json'
 import type pipeline from '../i18n/en-US/pipeline.json'
+import type plugin from '../i18n/en-US/plugin.json'
 import type pluginTags from '../i18n/en-US/plugin-tags.json'
 import type pluginTrigger from '../i18n/en-US/plugin-trigger.json'
-import type plugin from '../i18n/en-US/plugin.json'
+import type policyRegai from '../i18n/en-US/policy-regai.json'
 import type register from '../i18n/en-US/register.json'
 import type runLog from '../i18n/en-US/run-log.json'
 import type share from '../i18n/en-US/share.json'
@@ -55,6 +56,7 @@ export type Resources = {
   plugin: typeof plugin
   pluginTags: typeof pluginTags
   pluginTrigger: typeof pluginTrigger
+  policyRegai: typeof policyRegai
   register: typeof register
   runLog: typeof runLog
   share: typeof share
@@ -88,6 +90,7 @@ export const namespaces = [
   'plugin',
   'pluginTags',
   'pluginTrigger',
+  'policyRegai',
   'register',
   'runLog',
   'share',

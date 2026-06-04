@@ -50,5 +50,21 @@
     "scss",
     "pcss",
     "postcss"
-  ]
+  ],
+
+  // Prefer portable Node 22.22.3 over Cursor bundled node (engines: ^22.22.1)
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:LOCALAPPDATA}\\nodejs22;${env:APPDATA}\\npm;${env:PATH}"
+  },
+  "terminal.integrated.profiles.windows": {
+    "PowerShell (Dify Node 22)": {
+      "source": "PowerShell",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "$nodeDir = Join-Path $env:LOCALAPPDATA 'nodejs22'; $pnpmDir = Join-Path $env:APPDATA 'npm'; if (Test-Path (Join-Path $nodeDir 'node.exe')) { $env:Path = \"$nodeDir;$pnpmDir;\" + (($env:Path -split ';' | Where-Object { $_ -and $_ -ne $nodeDir -and $_ -ne $pnpmDir }) -join ';') }; Write-Host \"node: $(node -v)  pnpm: $(pnpm -v)\""
+      ]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell (Dify Node 22)"
 }

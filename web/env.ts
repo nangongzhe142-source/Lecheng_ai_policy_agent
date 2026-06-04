@@ -106,6 +106,18 @@ const clientSchema = {
    */
   NEXT_PUBLIC_MAX_TREE_DEPTH: coercedNumber.default(50),
   /**
+   * Base URL for the Lecheng policy agent embed (e.g. http://localhost)
+   */
+  NEXT_PUBLIC_POLICY_AGENT_BASE_URL: z.string().optional(),
+  /**
+   * Enable floating chatbot bubble on policy-regai pages
+   */
+  NEXT_PUBLIC_POLICY_AGENT_ENABLE_BUBBLE: coercedBoolean.default(false),
+  /**
+   * Access token for the Lecheng policy agent chatbot embed
+   */
+  NEXT_PUBLIC_POLICY_AGENT_TOKEN: z.string().optional(),
+  /**
    * The URL for Web APP, refers to the Web App base URL of WEB service if web app domain is different from
    * console or api domain.
    * example: http://udify.app/api
@@ -184,6 +196,9 @@ export const env = createEnv({
     NEXT_PUBLIC_MAX_PARALLEL_LIMIT: isServer ? process.env.NEXT_PUBLIC_MAX_PARALLEL_LIMIT : getRuntimeEnvFromBody('maxParallelLimit'),
     NEXT_PUBLIC_MAX_TOOLS_NUM: isServer ? process.env.NEXT_PUBLIC_MAX_TOOLS_NUM : getRuntimeEnvFromBody('maxToolsNum'),
     NEXT_PUBLIC_MAX_TREE_DEPTH: isServer ? process.env.NEXT_PUBLIC_MAX_TREE_DEPTH : getRuntimeEnvFromBody('maxTreeDepth'),
+    NEXT_PUBLIC_POLICY_AGENT_BASE_URL: isServer ? process.env.NEXT_PUBLIC_POLICY_AGENT_BASE_URL : getRuntimeEnvFromBody('policyAgentBaseUrl'),
+    NEXT_PUBLIC_POLICY_AGENT_ENABLE_BUBBLE: isServer ? process.env.NEXT_PUBLIC_POLICY_AGENT_ENABLE_BUBBLE : getRuntimeEnvFromBody('policyAgentEnableBubble'),
+    NEXT_PUBLIC_POLICY_AGENT_TOKEN: isServer ? process.env.NEXT_PUBLIC_POLICY_AGENT_TOKEN : getRuntimeEnvFromBody('policyAgentToken'),
     NEXT_PUBLIC_PUBLIC_API_PREFIX: isServer ? process.env.NEXT_PUBLIC_PUBLIC_API_PREFIX : getRuntimeEnvFromBody('publicApiPrefix'),
     NEXT_PUBLIC_SENTRY_DSN: isServer ? process.env.NEXT_PUBLIC_SENTRY_DSN : getRuntimeEnvFromBody('sentryDsn'),
     NEXT_PUBLIC_SITE_ABOUT: isServer ? process.env.NEXT_PUBLIC_SITE_ABOUT : getRuntimeEnvFromBody('siteAbout'),

@@ -1,0 +1,172 @@
+/**
+ * Copies policy documents from the local source folder into web/public and
+ * generates regulation data + i18n title entries.
+ *
+ * Usage: node web/scripts/sync-policy-documents.mjs [sourceDir]
+ */
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const webRoot = path.resolve(__dirname, '..')
+const defaultSource = 'C:\\乐城政策数据库'
+const sourceRoot = path.resolve(process.argv[2] || defaultSource)
+const publicRoot = path.join(webRoot, 'public', 'policy-regai', 'documents')
+const i18nZhPath = path.join(webRoot, 'i18n', 'zh-Hans', 'policy-regai.json')
+const i18nEnPath = path.join(webRoot, 'i18n', 'en-US', 'policy-regai.json')
+const dataOutPath = path.join(webRoot, 'app', 'components', 'policy-regai', 'policy-documents.generated.ts')
+
+const DOCUMENT_EXTENSIONS = new Set(['.pdf', '.doc', '.docx'])
+
+const CATEGORIES = [
+  {
+    folderPrefix: '1-',
+    id: 'zeroTariff',
+    type: 'incentive',
+    regionId: 'lecheng',
+    enName: 'Boao Lecheng zero-tariff drugs and devices',
+  },
+  {
+    folderPrefix: '2-',
+    id: 'specialDevice',
+    type: 'registration',
+    regionId: 'lecheng',
+    enName: 'Boao Lecheng special import drugs and devices',
+  },
+  {
+    folderPrefix: '3-',
+    id: 'biomedical',
+    type: 'clinical',
+    regionId: 'lecheng',
+    enName: 'Boao Lecheng biomedical new technologies',
+  },
+  {
+    folderPrefix: '4-',
+    id: 'ePrescription',
+    type: 'general',
+    regionId: 'hainan',
+    enName: 'Hainan e-prescription center',
+  },
+  {
+    folderPrefix: '5-',
+    id: 'foodImport',
+    type: 'registration',
+    regionId: 'lecheng',
+    enName: 'Temporary import of health foods and FSMP',
+  },
+  {
+    folderPrefix: '汇编',
+    id: 'biomedicalCompilation',
+    type: 'general',
+    regionId: 'lecheng',
+    enName: 'Biomedical new technology compilation',
+  },
+]
+
+function sanitizeFileName(name) {
+  return name.replace(/[<>:"/\\|?*]/g, '_')
+}
+
+function titleFromFileName(fileName) {
+  return path.basename(fileName, path.extname(fileName))
+}
+
+function formatDate(date) {
+  return date.toISOString().slice(0, 10)
+}
+
+function loadJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'))
+}
+
+function saveJson(filePath, data) {
+  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8')
+}
+
+function resolveCategory(folderName) {
+  return CATEGORIES.find(category => folderName.startsWith(category.folderPrefix))
+}
+
+function main() {
+  if (!fs.existsSync(sourceRoot)) {
+    console.error(`Source directory not found: ${sourceRoot}`)
+    process.exit(1)
+  }
+
+  if (fs.existsSync(publicRoot))
+    fs.rmSync(publicRoot, { recursive: true, force: true })
+
+  const zhI18n = loadJson(i18nZhPath)
+  const enI18n = loadJson(i18nEnPath)
+
+  for (const key of Object.keys(zhI18n)) {
+    if (key.startsWith('doc.'))
+      delete zhI18n[key]
+  }
+  for (const key of Object.keys(enI18n)) {
+    if (key.startsWith('doc.'))
+      delete enI18n[key]
+  }
+
+  const regulations = []
+  const folders = fs.readdirSync(sourceRoot, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name)
+    .sort()
+
+  for (const folderName of folders) {
+    const category = resolveCategory(folderName)
+    if (!category) {
+      console.warn(`Skipping unknown folder: ${folderName}`)
+      continue
+    }
+
+    const folderPath = path.join(sourceRoot, folderName)
+    const files = fs.readdirSync(folderPath, { withFileTypes: true })
+      .filter(entry => entry.isFile())
+      .map(entry => entry.name)
+      .filter(name => DOCUMENT_EXTENSIONS.has(path.extname(name).toLowerCase()))
+      .sort()
+
+    files.forEach((fileName, index) => {
+      const docId = `${category.id}-${String(index + 1).padStart(3, '0')}`
+      const titleKey = `doc.${docId}.title`
+      const safeName = sanitizeFileName(fileName)
+      const destDir = path.join(publicRoot, category.id)
+      fs.mkdirSync(destDir, { recursive: true })
+      fs.copyFileSync(path.join(folderPath, fileName), path.join(destDir, safeName))
+
+      const stats = fs.statSync(path.join(folderPath, fileName))
+      const titleZh = titleFromFileName(fileName)
+
+      zhI18n[titleKey] = titleZh
+      enI18n[titleKey] = `${category.enName} — Document ${index + 1}: ${titleZh}`
+
+      regulations.push({
+        id: docId,
+        categoryId: category.id,
+        regionId: category.regionId,
+        type: category.type,
+        publishedAt: formatDate(stats.mtime),
+        titleKey,
+        agencyKey: `category.${category.id}.agency`,
+        audienceKey: `category.${category.id}.audience`,
+        summaryKey: `category.${category.id}.summary`,
+        fileUrl: `/policy-regai/documents/${category.id}/${encodeURIComponent(safeName)}`,
+      })
+    })
+  }
+
+  regulations.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+
+  const tsContent = `/* eslint-disable */\n// Generated by web/scripts/sync-policy-documents.mjs — do not edit manually.\n\nimport type { RegulationItem } from './data'\n\nexport const POLICY_DOCUMENT_REGULATIONS: RegulationItem[] = ${JSON.stringify(regulations, null, 2)}\n`
+
+  fs.writeFileSync(dataOutPath, tsContent, 'utf8')
+  saveJson(i18nZhPath, zhI18n)
+  saveJson(i18nEnPath, enI18n)
+
+  console.log(`Synced ${regulations.length} documents to ${publicRoot}`)
+}
+
+main()

@@ -132,6 +132,7 @@ Docker 运行根  =  <REPO_ROOT>\docker
 - [ ] 局域网 URL 与 `NEXT_PUBLIC_SOCKET_URL` 配置
 - [ ] SMTP 与成员邀请
 - [ ] `git push` 前执行 `git status` 与 `git check-ignore -v docker/.env`
+- [ ] 乐城 policy-regai 宿主平台：见 `2026-06-03-policy-regai-platform-embed-log.md`
 
 ---
 
