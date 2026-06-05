@@ -50,6 +50,43 @@ function Get-EnvOrDefault {
     return $v
 }
 
+function Resolve-PythonCommand {
+    $configured = Get-EnvOrDefault "PYTHON_EXE" ""
+    if (-not [string]::IsNullOrWhiteSpace($configured)) {
+        if (-not (Test-Path -LiteralPath $configured)) {
+            Write-Error "PYTHON_EXE not found: $configured"
+        }
+        return @{ Exe = $configured; Prefix = @() }
+    }
+
+    # Scheduled tasks often use a minimal PATH; prefer real installs over WindowsApps stubs.
+    $knownPaths = @(
+        "$env:ProgramData\miniconda3\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe"
+    )
+    foreach ($path in $knownPaths) {
+        if (Test-Path -LiteralPath $path) {
+            return @{ Exe = $path; Prefix = @() }
+        }
+    }
+
+    $py = Get-Command py -ErrorAction SilentlyContinue
+    if ($py -and $py.Source -notmatch 'WindowsApps') {
+        return @{ Exe = $py.Source; Prefix = @("-3") }
+    }
+
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if ($python -and $python.Source -notmatch 'WindowsApps') {
+        return @{ Exe = $python.Source; Prefix = @() }
+    }
+
+    Write-Error @"
+Python not found. Set PYTHON_EXE in langsmith.env.local, e.g.:
+  PYTHON_EXE=C:\ProgramData\miniconda3\python.exe
+"@
+}
+
 Import-DotEnvFile -Path $EnvFile
 
 if (-not $env:LANGSMITH_API_KEY) {
@@ -76,23 +113,9 @@ if ($Limit -le 0) {
     $Limit = [int]$limitStr
 }
 
-$pythonExe = $null
-$pythonPrefix = @()
-foreach ($candidate in @("python", "py")) {
-    $cmd = Get-Command $candidate -ErrorAction SilentlyContinue
-    if ($cmd) {
-        if ($candidate -eq "py") {
-            $pythonExe = "py"
-            $pythonPrefix = @("-3")
-        } else {
-            $pythonExe = "python"
-        }
-        break
-    }
-}
-if (-not $pythonExe) {
-    Write-Error "Python not found on PATH. Install Python 3 and langsmith: pip install langsmith"
-}
+$python = Resolve-PythonCommand
+$pythonExe = $python.Exe
+$pythonPrefix = $python.Prefix
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 $stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
@@ -113,6 +136,7 @@ if ($DryRun) {
 $header = @"
 === LangSmith annotation sync $(Get-Date -Format o) ===
 project=$project queue_id=$queueId hours=$Hours limit=$Limit dry_run=$($DryRun.IsPresent)
+python=$pythonExe $($pythonPrefix -join ' ')
 "@
 $header | Out-File -FilePath $logFile -Encoding utf8
 

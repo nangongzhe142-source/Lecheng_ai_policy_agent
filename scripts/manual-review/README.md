@@ -159,6 +159,39 @@ python sync_langsmith_annotation_queue.py `
 - Skips runs already in the queue (prefetch + duplicate API errors).
 - Optional `--root-only` scans root runs only (not recommended for Dify).
 
+### Program location (Windows)
+
+All scripts live under:
+
+```text
+d:\LECHENG POLICY AI AGENT\scripts\manual-review\
+```
+
+| File | Role |
+|------|------|
+| `run_annotation_sync_daily.ps1` | **Entry point** — used by both manual runs and the daily scheduled task |
+| `sync_langsmith_annotation_queue.py` | Core logic: scan LangSmith `llm` runs → Annotation Queue |
+| `langsmith.env.local` | Local config (API key, `PYTHON_EXE`; gitignored) |
+| `logs\annotation_sync_*.log` | Run logs (gitignored) |
+
+Windows scheduled task name: **`Lecheng-LangSmith-ManualReview-Sync`** (daily 08:00, same runner script).
+
+### Manual run (any time)
+
+```powershell
+cd "d:\LECHENG POLICY AI AGENT\scripts\manual-review"
+.\run_annotation_sync_daily.ps1              # sync last 30h (from langsmith.env.local)
+.\run_annotation_sync_daily.ps1 -DryRun      # preview matches, no enqueue
+.\run_annotation_sync_daily.ps1 -Hours 24    # override scan window
+```
+
+Direct Python (advanced):
+
+```powershell
+cd "d:\LECHENG POLICY AI AGENT\scripts\manual-review"
+python sync_langsmith_annotation_queue.py --queue-id "<LANGSMITH_QUEUE_ID>" --project Lecheng_policy_ai_agent --run-name llm --hours 24 --limit 100
+```
+
 ### Daily automatic sync (Windows, recommended)
 
 One-time setup in PowerShell (as your Windows user):
@@ -166,7 +199,7 @@ One-time setup in PowerShell (as your Windows user):
 ```powershell
 cd "d:\LECHENG POLICY AI AGENT\scripts\manual-review"
 Copy-Item langsmith.env.example langsmith.env.local
-# Edit langsmith.env.local: set LANGSMITH_API_KEY (and queue/project if needed)
+# Edit langsmith.env.local: LANGSMITH_API_KEY, PYTHON_EXE (full path to python.exe)
 
 .\run_annotation_sync_daily.ps1          # test once
 .\register_daily_annotation_sync_task.ps1  # register task, default 08:00 daily
@@ -175,7 +208,7 @@ Copy-Item langsmith.env.example langsmith.env.local
 | File | Purpose |
 |------|---------|
 | `langsmith.env.example` | Safe template (commit to git) |
-| `langsmith.env.local` | Your API key (gitignored) |
+| `langsmith.env.local` | Your API key + `PYTHON_EXE` (gitignored) |
 | `run_annotation_sync_daily.ps1` | Runner: loads env, syncs last 30h, writes `logs/` |
 | `register_daily_annotation_sync_task.ps1` | Creates task `Lecheng-LangSmith-ManualReview-Sync` |
 
