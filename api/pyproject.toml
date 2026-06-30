@@ -175,8 +175,8 @@ dev = [
     # "locust>=2.40.4",  # Temporarily removed due to compatibility issues. Uncomment when resolved.
     "pytest-timeout>=2.4.0",
     "pytest-xdist>=3.8.0",
-    "pyrefly>=1.1.1",
-    "xinference-client>=2.7.0",
+    "pyrefly>=1.0.0",
+    "xinference-client>=2.10.0",
 ]
 
 ############################################################
@@ -268,7 +268,7 @@ vdb-vastbase = ["dify-vdb-vastbase"]
 vdb-vikingdb = ["dify-vdb-vikingdb"]
 vdb-weaviate = ["dify-vdb-weaviate"]
 # Optional client used by some tests / integrations (not a vector backend plugin)
-vdb-xinference = ["xinference-client>=2.7.0"]
+vdb-xinference = ["xinference-client>=2.10.0"]
 
 trace-all = [
     "dify-trace-aliyun",
