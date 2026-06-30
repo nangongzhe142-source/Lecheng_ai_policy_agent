@@ -19,7 +19,7 @@ dependencies = [
     "psycogreen>=1.0.2",
     "psycopg2-binary>=2.9.12",
     "python-socketio>=5.16.3",
-    "redis[hiredis]>=7.4.0",
+    "redis[hiredis]>=8.0.1",
     "sendgrid>=6.12.5",
     "sseclient-py>=1.8.0",
 
